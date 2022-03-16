@@ -7,8 +7,8 @@ jobs:
   run-tests: 
     runs-on: ubuntu-latest
     env:
-      DEV_USERNAME: ${{ secrets.INT_USERNAME }}
-      DEV_CONSUMER_KEY: ${{ secrets.INT_CONSUMER_KEY }}
+      DEV_USERNAME: ${{ secrets.DEV_USERNAME }}
+      DEV_CONSUMER_KEY: ${{ secrets.DEV_CONSUMER_KEY }}
     steps:
       - name: Install Salesforce CLI
         run: |
