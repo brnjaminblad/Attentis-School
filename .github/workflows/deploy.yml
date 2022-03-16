@@ -1,0 +1,56 @@
+name: Deploy
+
+on: 
+  push:
+    branches: [main]
+
+jobs:  
+  deploy-to-int: 
+    runs-on: ubuntu-latest
+
+    env:
+      DEV_USERNAME: ${{ secrets.INT_USERNAME }}
+      DEV_CONSUMER_KEY: ${{ secrets.INT_CONSUMER_KEY }}
+
+    steps:
+      - name: Install Salesforce CLI
+        run: |
+          wget https://developer.salesforce.com/media/salesforce-cli/sfdx-linux-amd64.tar.xz
+          mkdir sfdx-cli
+          tar xJf sfdx-linux-amd64.tar.xz -C sfdx-cli --strip-components 1
+          ./sfdx-cli/install
+
+      - name: Checkout Development source code
+        uses: actions/checkout@v2
+        with:
+          ref: "main"
+          path: env
+
+      - name: Checkout source code
+        uses: actions/checkout@v2
+        with:
+          path: main
+
+      # - name: Set environment variable
+      #   run: |
+      #     cat ./env/.github/workflows/env | grep DEV_CONSUMER_KEY= | grep -o '".*"' | sed 's/"//g' > ./main/DEV_CONSUMER_KEY
+      #     cat ./env/.github/workflows/env | grep DEV_USERNAME= | grep -o '".*"' | sed 's/"//g' > ./main/DEV_USERNAME
+
+      - name: Convert metadata to mdapi format
+        run: |
+          cd main
+          sfdx force:source:convert --sourcepath "force-app" --outputdir metadatadeploy
+
+      - name: Authenticate Org
+        shell: bash
+        env:
+          SALESFORCE_JWT_SECRET_KEY: ${{ secrets.DEV_SECRET_KEY }}
+        run: | 
+          echo "${SALESFORCE_JWT_SECRET_KEY}" > server.key
+          sfdx auth:jwt:grant -f ./server.key -a DevOrg -r https://login.salesforce.com -i ${{ secrets.DEV_CONSUMER_KEY }} -u ${{ secrets.DEV_USERNAME }}
+      
+      - name: Deploy on Target Org
+        run: |
+          cd main
+          sfdx force:source:deploy --wait 180 -u DevOrg --manifest metadatadeploy/package.xml --verbose
+      
