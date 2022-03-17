@@ -2,15 +2,16 @@ name: Deploy
 
 on: 
   push:
-    branches: [Dev]
+    branches: [QA]
+
 
 jobs:  
   deploy-to-int: 
     runs-on: ubuntu-latest
 
     env:
-      DEV_USERNAME: ${{ secrets.INIT_USERNAME }}
-      DEV_CONSUMER_KEY: ${{ secrets.INIT_CONSUMER_KEY }}
+      QA_USERNAME: ${{ secrets.QA_USERNAME }}
+      QA_CONSUMER_KEY: ${{ secrets.QA_CONSUMER_KEY }}
 
     steps:
       - name: Install Salesforce CLI
@@ -33,8 +34,8 @@ jobs:
 
       # - name: Set environment variable
       #   run: |
-      #     cat ./env/.github/workflows/env | grep DEV_CONSUMER_KEY= | grep -o '".*"' | sed 's/"//g' > ./main/DEV_CONSUMER_KEY
-      #     cat ./env/.github/workflows/env | grep DEV_USERNAME= | grep -o '".*"' | sed 's/"//g' > ./main/DEV_USERNAME
+      #     cat ./env/.github/workflows/env | grep QA_CONSUMER_KEY= | grep -o '".*"' | sed 's/"//g' > ./main/QA_CONSUMER_KEY
+      #     cat ./env/.github/workflows/env | grep QA_USERNAME= | grep -o '".*"' | sed 's/"//g' > ./main/QA_USERNAME
 
       - name: Convert metadata to mdapi format
         run: |
@@ -44,10 +45,10 @@ jobs:
       - name: Authenticate Org
         shell: bash
         env:
-          SALESFORCE_JWT_SECRET_KEY: ${{ secrets.DEV_SECRET_KEY }}
+          SALESFORCE_JWT_SECRET_KEY: ${{ secrets.QA_SECRET_KEY }}
         run: | 
           echo "${SALESFORCE_JWT_SECRET_KEY}" > server.key
-          sfdx auth:jwt:grant -f ./server.key -a DevOrg -r https://login.salesforce.com -i ${{ secrets.DEV_CONSUMER_KEY }} -u ${{ secrets.DEV_USERNAME }}
+          sfdx auth:jwt:grant -f ./server.key -a DevOrg -r https://login.salesforce.com -i ${{ secrets.QA_CONSUMER_KEY }} -u ${{ secrets.QA_USERNAME }}
       
       - name: Deploy on Target Org
         run: |
