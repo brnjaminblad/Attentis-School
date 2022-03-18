@@ -2,7 +2,7 @@ name: Deploy
 
 on: 
   push:
-    branches: [QA]
+    branches: [Dev]
 
 
 jobs:  
@@ -10,8 +10,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      QA_USERNAME: ${{ secrets.QA_USERNAME }}
-      QA_CONSUMER_KEY: ${{ secrets.QA_CONSUMER_KEY }}
+      DEV_USERNAME: ${{ secrets.DEV_USERNAME }}
+      DEV_CONSUMER_KEY: ${{ secrets.DEV_CONSUMER_KEY }}
 
     steps:
       - name: Install Salesforce CLI
@@ -45,10 +45,10 @@ jobs:
       - name: Authenticate Org
         shell: bash
         env:
-          SALESFORCE_JWT_SECRET_KEY: ${{ secrets.QA_SECRET_KEY }}
+          SALESFORCE_JWT_SECRET_KEY: ${{ secrets.DEV_SECRET_KEY }}
         run: | 
           echo "${SALESFORCE_JWT_SECRET_KEY}" > server.key
-          sfdx auth:jwt:grant -f ./server.key -a DevOrg -r https://login.salesforce.com -i ${{ secrets.QA_CONSUMER_KEY }} -u ${{ secrets.QA_USERNAME }}
+          sfdx auth:jwt:grant -f ./server.key -a DevOrg -r https://login.salesforce.com -i ${{ secrets.DEV_CONSUMER_KEY }} -u ${{ secrets.DEV_USERNAME }}
       
       - name: Deploy on Target Org
         run: |
