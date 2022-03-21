@@ -2,15 +2,15 @@ name: Deploy
 
 on: 
   push:
-    branches: [main]
+    branches: [Dev]
 
 jobs:  
   deploy-to-int: 
     runs-on: ubuntu-latest
 
     env:
-      DEV_USERNAME: ${{ secrets.INT_USERNAME }}
-      DEV_CONSUMER_KEY: ${{ secrets.INT_CONSUMER_KEY }}
+      DEV_USERNAME: ${{ secrets.DEV_USERNAME }}
+      DEV_CONSUMER_KEY: ${{ secrets.DEV_CONSUMER_KEY }}
 
     steps:
       - name: Install Salesforce CLI
@@ -23,13 +23,13 @@ jobs:
       - name: Checkout Development source code
         uses: actions/checkout@v2
         with:
-          ref: "main"
+          ref: "Dev"
           path: env
 
       - name: Checkout source code
         uses: actions/checkout@v2
         with:
-          path: main
+          path: Dev
 
       # - name: Set environment variable
       #   run: |
@@ -38,7 +38,7 @@ jobs:
 
       - name: Convert metadata to mdapi format
         run: |
-          cd main
+          cd Dev
           sfdx force:source:convert --sourcepath "force-app" --outputdir metadatadeploy
 
       - name: Authenticate Org
@@ -51,6 +51,6 @@ jobs:
       
       - name: Deploy on Target Org
         run: |
-          cd main
+          cd Dev
           sfdx force:source:deploy --wait 180 -u DevOrg --manifest metadatadeploy/package.xml --verbose
       
