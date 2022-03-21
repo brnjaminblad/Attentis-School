@@ -1,7 +1,9 @@
 name: Test
 on:
   pull_request:
+
     branches: [QA]
+
     types: [opened, synchronize, reopened]
 jobs:  
   run-tests: 
@@ -9,6 +11,7 @@ jobs:
     env:
       QA_USERNAME: ${{ secrets.QA_USERNAME }}
       QA_CONSUMER_KEY: ${{ secrets.QA_CONSUMER_KEY }}
+
     steps:
       - name: Install Salesforce CLI
         run: |
@@ -25,6 +28,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           path: QA
+          
       # - name: Set environment variable
       #   run: |
       #     cat ./env/.github/workflows/env | grep DEV_CONSUMER_KEY= | grep -o '".*"' | sed 's/"//g' > ./main/DEV_CONSUMER_KEY
@@ -42,5 +46,6 @@ jobs:
           sfdx auth:jwt:grant -f ./server.key -a QAOrg -i ${{ secrets.QA_CONSUMER_KEY }} -u ${{ secrets.QA_USERNAME }} -r https://login.salesforce.com
       - name: Run tests
         run: |
-          cd main
+          cd QA
           sfdx force:source:deploy -w 30 -c -l NoTestRun -u QAOrg --manifest metadatadeploy/package.xml --verbose 
+

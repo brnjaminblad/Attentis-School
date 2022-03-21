@@ -2,13 +2,14 @@ name: Deploy
 
 on: 
   push:
-    branches: [main]
+    branches: [QA]
 
 jobs:  
   deploy-to-int: 
     runs-on: ubuntu-latest
 
     env:
+
       QA_USERNAME: ${{ secrets.QA_USERNAME }}
       QA_CONSUMER_KEY: ${{ secrets.QA_CONSUMER_KEY }}
 
@@ -23,13 +24,13 @@ jobs:
       - name: Checkout Development source code
         uses: actions/checkout@v2
         with:
-          ref: "main"
+          ref: "QA"
           path: env
 
       - name: Checkout source code
         uses: actions/checkout@v2
         with:
-          path: main
+          path: QA
 
       # - name: Set environment variable
       #   run: |
@@ -38,7 +39,7 @@ jobs:
 
       - name: Convert metadata to mdapi format
         run: |
-          cd main
+          cd QA
           sfdx force:source:convert --sourcepath "force-app" --outputdir metadatadeploy
 
       - name: Authenticate Org
