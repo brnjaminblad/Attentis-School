@@ -40,10 +40,10 @@ jobs:
       - name: Authenticate Org
         shell: bash
         env:
-          SALESFORCE_JWT_SECRET_KEY: ${{ secrets.QA_SECRET_KEY }}
+          SALESFORCE_JWT_SECRET_KEY: ${{ secrets.DEV_SECRET_KEY }}
         run: | 
           echo "${SALESFORCE_JWT_SECRET_KEY}" > server.key
-          sfdx auth:jwt:grant -f ./server.key -a QAOrg -i ${{ secrets.DEV_CONSUMER_KEY }} -u ${{ secrets.DEV_USERNAME }} -r https://login.salesforce.com
+          sfdx auth:jwt:grant -f ./server.key -a DevOrg -i ${{ secrets.DEV_CONSUMER_KEY }} -u ${{ secrets.DEV_USERNAME }} -r https://login.salesforce.com
       - name: Run tests
         run: |
           cd Dev
