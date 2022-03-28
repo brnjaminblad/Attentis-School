@@ -27,8 +27,8 @@ jobs:
           path: Dev
       # - name: Set environment variable
       #   run: |
-      #     cat ./env/.github/workflows/env | grep DEV_CONSUMER_KEY= | grep -o '".*"' | sed 's/"//g' > ./main/DEV_CONSUMER_KEY
-      #     cat ./env/.github/workflows/env | grep DEV_USERNAME= | grep -o '".*"' | sed 's/"//g' > ./main/DEV_USERNAME
+      #      cat ./env/.github/workflows/env | grep DEV_CONSUMER_KEY= | grep -o '".*"' | sed 's/"//g' > ./main/DEV_CONSUMER_KEY
+      #      cat ./env/.github/workflows/env | grep DEV_USERNAME= | grep -o '".*"' | sed 's/"//g' > ./main/DEV_USERNAME
       - name: Convert metadata to mdapi format
         run: |
           cd Dev
