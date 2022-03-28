@@ -2,15 +2,16 @@ name: Deploy
 
 on: 
   push:
-    branches: [Dev]
+    branches: [QA]
 
 jobs:  
   deploy-to-int: 
     runs-on: ubuntu-latest
 
     env:
-      DEV_USERNAME: ${{ secrets.DEV_USERNAME }}
-      DEV_CONSUMER_KEY: ${{ secrets.DEV_CONSUMER_KEY }}
+
+      QA_USERNAME: ${{ secrets.QA_USERNAME }}
+      QA_CONSUMER_KEY: ${{ secrets.QA_CONSUMER_KEY }}
 
     steps:
       - name: Install Salesforce CLI
@@ -23,34 +24,36 @@ jobs:
       - name: Checkout Development source code
         uses: actions/checkout@v2
         with:
-          ref: "Dev"
+          ref: "QA"
           path: env
 
       - name: Checkout source code
         uses: actions/checkout@v2
         with:
-          path: Dev
+          path: QA
 
       # - name: Set environment variable
       #   run: |
+
       #      cat ./env/.github/workflows/env | grep DEV_CONSUMER_KEY= | grep -o '".*"' | sed 's/"//g' > ./main/DEV_CONSUMER_KEY
       #      cat ./env/.github/workflows/env | grep DEV_USERNAME= | grep -o '".*"' | sed 's/"//g' > ./main/DEV_USERNAME
 
+
       - name: Convert metadata to mdapi format
         run: |
-          cd Dev
+          cd QA
           sfdx force:source:convert --sourcepath "force-app" --outputdir metadatadeploy
 
       - name: Authenticate Org
         shell: bash
         env:
-          SALESFORCE_JWT_SECRET_KEY: ${{ secrets.DEV_SECRET_KEY }}
+          SALESFORCE_JWT_SECRET_KEY: ${{ secrets.QA_SECRET_KEY }}
         run: | 
           echo "${SALESFORCE_JWT_SECRET_KEY}" > server.key
-          sfdx auth:jwt:grant -f ./server.key -a DevOrg -r https://login.salesforce.com -i ${{ secrets.DEV_CONSUMER_KEY }} -u ${{ secrets.DEV_USERNAME }}
+          sfdx auth:jwt:grant -f ./server.key -a QAOrg -r https://login.salesforce.com -i ${{ secrets.QA_CONSUMER_KEY }} -u ${{ secrets.QA_USERNAME }}
       
       - name: Deploy on Target Org
         run: |
-          cd Dev
-          sfdx force:source:deploy --wait 180 -u DevOrg --manifest metadatadeploy/package.xml --verbose
+          cd main
+          sfdx force:source:deploy --wait 180 -u QAOrg --manifest metadatadeploy/package.xml --verbose
       

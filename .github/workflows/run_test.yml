@@ -1,14 +1,17 @@
 name: Test
 on:
   pull_request:
-    branches: [Dev]
+
+    branches: [QA]
+
     types: [opened, synchronize, reopened]
 jobs:  
   run-tests: 
     runs-on: ubuntu-latest
     env:
-      DEV_USERNAME: ${{ secrets.DEV_USERNAME }}
-      DEV_CONSUMER_KEY: ${{ secrets.DEV_CONSUMER_KEY }}
+      QA_USERNAME: ${{ secrets.QA_USERNAME }}
+      QA_CONSUMER_KEY: ${{ secrets.QA_CONSUMER_KEY }}
+
     steps:
       - name: Install Salesforce CLI
         run: |
@@ -19,28 +22,30 @@ jobs:
       - name: Checkout Develop source code
         uses: actions/checkout@v2
         with:
-          ref: "Dev"
+          ref: "QA"
           path: env
       - name: Checkout source code
         uses: actions/checkout@v2
         with:
-          path: Dev
+          path: QA
+          
       # - name: Set environment variable
       #   run: |
       #      cat ./env/.github/workflows/env | grep DEV_CONSUMER_KEY= | grep -o '".*"' | sed 's/"//g' > ./main/DEV_CONSUMER_KEY
       #      cat ./env/.github/workflows/env | grep DEV_USERNAME= | grep -o '".*"' | sed 's/"//g' > ./main/DEV_USERNAME
       - name: Convert metadata to mdapi format
         run: |
-          cd Dev
+          cd QA
           sfdx force:source:convert --sourcepath "force-app" --outputdir metadatadeploy
       - name: Authenticate Org
         shell: bash
         env:
-          SALESFORCE_JWT_SECRET_KEY: ${{ secrets.DEV_SECRET_KEY }}
+          SALESFORCE_JWT_SECRET_KEY: ${{ secrets.QA_SECRET_KEY }}
         run: | 
           echo "${SALESFORCE_JWT_SECRET_KEY}" > server.key
-          sfdx auth:jwt:grant -f ./server.key -a DevOrg -i ${{ secrets.DEV_CONSUMER_KEY }} -u ${{ secrets.DEV_USERNAME }} -r https://login.salesforce.com
+          sfdx auth:jwt:grant -f ./server.key -a QAOrg -i ${{ secrets.QA_CONSUMER_KEY }} -u ${{ secrets.QA_USERNAME }} -r https://login.salesforce.com
       - name: Run tests
         run: |
-          cd Dev
-          sfdx force:source:deploy -w 30 -c -l NoTestRun -u DevOrg --manifest metadatadeploy/package.xml --verbose 
+          cd QA
+          sfdx force:source:deploy -w 30 -c -l NoTestRun -u QAOrg --manifest metadatadeploy/package.xml --verbose 
+
