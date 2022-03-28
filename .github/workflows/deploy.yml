@@ -2,7 +2,7 @@ name: Deploy
 
 on: 
   push:
-    branches: [QA]
+    branches: [Dev]
 
 jobs:  
   deploy-to-int: 
@@ -10,8 +10,8 @@ jobs:
 
     env:
 
-      QA_USERNAME: ${{ secrets.QA_USERNAME }}
-      QA_CONSUMER_KEY: ${{ secrets.QA_CONSUMER_KEY }}
+      DEV_USERNAME: ${{ secrets.DEV_USERNAME }}
+      DEV_CONSUMER_KEY: ${{ secrets.DEV_CONSUMER_KEY }}
 
     steps:
       - name: Install Salesforce CLI
@@ -24,13 +24,13 @@ jobs:
       - name: Checkout Development source code
         uses: actions/checkout@v2
         with:
-          ref: "QA"
+          ref: "Dev"
           path: env
 
       - name: Checkout source code
         uses: actions/checkout@v2
         with:
-          path: QA
+          path: Dev
 
       # - name: Set environment variable
       #   run: |
@@ -39,7 +39,7 @@ jobs:
 
       - name: Convert metadata to mdapi format
         run: |
-          cd QA
+          cd Dev
           sfdx force:source:convert --sourcepath "force-app" --outputdir metadatadeploy
 
       - name: Authenticate Org
@@ -48,10 +48,10 @@ jobs:
           SALESFORCE_JWT_SECRET_KEY: ${{ secrets.QA_SECRET_KEY }}
         run: | 
           echo "${SALESFORCE_JWT_SECRET_KEY}" > server.key
-          sfdx auth:jwt:grant -f ./server.key -a QAOrg -r https://login.salesforce.com -i ${{ secrets.QA_CONSUMER_KEY }} -u ${{ secrets.QA_USERNAME }}
+          sfdx auth:jwt:grant -f ./server.key -a DevOrg -r https://login.salesforce.com -i ${{ secrets.DEV_CONSUMER_KEY }} -u ${{ secrets.DEV_USERNAME }}
       
       - name: Deploy on Target Org
         run: |
           cd main
-          sfdx force:source:deploy --wait 180 -u QAOrg --manifest metadatadeploy/package.xml --verbose
+          sfdx force:source:deploy --wait 180 -u DevOrg --manifest metadatadeploy/package.xml --verbose
       
