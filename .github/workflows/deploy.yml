@@ -54,6 +54,6 @@ jobs:
       
       - name: Deploy on Target Org
         run: |
-          cd main
+          cd Dev
           sfdx force:source:deploy --wait 180 -u DevOrg --manifest metadatadeploy/package.xml --verbose
       
